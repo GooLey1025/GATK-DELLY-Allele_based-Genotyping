@@ -1,0 +1,34 @@
+# Example configuration file for GATK-DELLY Allele-based Genotyping pipeline
+# Usage: nextflow run main.nf -params-file params.yaml
+
+# Project configuration
+project: "output"
+bam_glob: "/path/to/*.bam"
+out_dir: "results"
+
+# Reference and input files
+ref: "reference.fa"
+snp_site_vcf: "snp.sites.vcf"
+indel_site_vcf: "indel.sites.vcf"
+sv_sites_vcf: "sv.sites.bcf"
+snp_markers_intervals: "snp.intervals"
+indel_markers_intervals: "indel.intervals"
+
+# Software paths (optional - if not specified, tools will be used from system PATH)
+# Leave empty or omit to use tools from system PATH
+java_path: ""  # Optional: specify Java 8 executable path (empty = use from PATH)
+delly_path: ""               # Optional: specify Delly executable path (empty = use from PATH)
+bcftools_path: ""           # Optional: specify bcftools executable path (empty = use from PATH)
+samtools_path: ""           # Optional: specify samtools executable path (empty = use from PATH)
+tabix_path: ""              # Optional: specify tabix executable path (empty = use from PATH)
+
+# Required software paths (JAR files)
+gatk_path: "./GenomeAnalysisTK3.7.jar"
+picard_path: "/path/to/picard.jar"
+beagle_path: "/path/to/beagle.jar"
+
+# Resource configuration
+threads: 48
+gatk_memory: "100g"
+beagle_memory: "300 GB"
+beagle_cpus: 64

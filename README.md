@@ -26,6 +26,8 @@ Given a directory of per-sample BAM/BAI files, a reference FASTA, and pre-define
 
 ## Requirements
 
+### Software Dependencies
+
 The following software must be installed and available in the **system environment ($PATH)** before running the pipeline:
 
 - `nextflow`
@@ -37,7 +39,9 @@ The following software must be installed and available in the **system environme
 - `samtools`
 - `tabix`
 
-**Note**: The executable names are case-sensitive and must exactly match those listed above. 
+**Note**: The executable names are case-sensitive and must exactly match those listed above.
+
+**Optional Tool Path Specification**: If you need to use specific versions of these tools (e.g., `/usr/bin/java`), you can specify their paths using the optional parameters `--java_path`, `--delly_path`, `--bcftools_path`, `--samtools_path`, or `--tabix_path`. If not specified, the pipeline will use the tools from your system PATH. 
 
 ### Input Files
 
@@ -49,11 +53,39 @@ The following software must be installed and available in the **system environme
 - **SNP intervals file**: Interval list file specifying SNP marker positions for genotyping
 - **INDEL intervals file**: Interval list file specifying INDEL marker positions for genotyping
 
-These sites vcf and intervals can be generated via [GAWS-LD_Markers_Discovery#reproduce-of-rice-graphpangenome-gs](https://github.com/GooLey1025/GWAS-LD_Markers-Discovery#reproduce-of-rice-graphpangenome-gs)
+These sites VCF files and interval lists can be generated using the [GWAS-LD_Markers-Discovery](https://github.com/GooLey1025/GWAS-LD_Markers-Discovery#reproduce-of-rice-graphpangenome-gs) showcase.
+
+Example input files are available in the `./example_input` directory for reference.
 
 ## Configuration
 
-All parameters can be provided either via the command line or a Nextflow configuration file. Detailed parameter settings and default values can be found in the header section of `main.nf`.
+All parameters can be provided either via the command line or a Nextflow configuration file (YAML format). The recommended approach is to use a configuration file for better organization and reproducibility.
+
+### Using a Configuration File
+
+1. Copy the example configuration file:
+   ```bash
+   cp params.yaml.example params.yaml
+   ```
+
+2. Edit `params.yaml` with your specific settings:
+   ```yaml
+   project: "705rice"
+   bam_glob: "/path/to/*.bam"
+   ref: "reference.fa"
+   # ... other parameters
+   ```
+
+3. Run the pipeline with the configuration file:
+   ```bash
+   nextflow run main.nf -params-file params.yaml
+   ```
+
+**Note**: Command-line parameters will override values in the configuration file.
+
+### Parameter Reference
+
+Detailed parameter settings and default values can be found in the header section of `main.nf`.
 
 ### Input Parameters
 
@@ -71,15 +103,26 @@ All parameters can be provided either via the command line or a Nextflow configu
 | `--gatk_path` | Path to GATK JAR file. Relative paths are automatically converted to absolute paths | `./GenomeAnalysisTK3.7.jar` (in current repository) |
 | `--picard_path` | Path to Picard JAR file. Relative paths are automatically converted to absolute paths | `./picard.jar` (in current repository) |
 | `--beagle_path` | Path to Beagle JAR file. Relative paths are automatically converted to absolute paths | Required |
-| `--java_path` | Java executable path. Relative paths are automatically converted to absolute paths | `/usr/bin/java` |
-| `--delly_path` | Delly executable path. Relative paths are automatically converted to absolute paths | `delly` (from $PATH) |
-| `--bcftools_path` | bcftools executable path. Relative paths are automatically converted to absolute paths | `bcftools` (from $PATH) |
+| `--java_path` | **Optional**: Path to Java executable. If not specified, uses `java` from system PATH | `null` (uses PATH) |
+| `--delly_path` | **Optional**: Path to Delly executable. If not specified, uses `delly` from system PATH | `null` (uses PATH) |
+| `--bcftools_path` | **Optional**: Path to bcftools executable. If not specified, uses `bcftools` from system PATH | `null` (uses PATH) |
+| `--samtools_path` | **Optional**: Path to samtools executable. If not specified, uses `samtools` from system PATH | `null` (uses PATH) |
+| `--tabix_path` | **Optional**: Path to tabix executable. If not specified, uses `tabix` from system PATH | `null` (uses PATH) |
 | `--threads` | Number of threads for GATK UnifiedGenotyper | `48` |
 | `--gatk_memory` | Memory allocation for GATK (e.g., `100g`) | `100g` |
 | `--beagle_memory` | Memory allocation for Beagle | `300 GB` |
 | `--beagle_cpus` | Number of CPUs for Beagle | `64` |
 
 ## Command Examples
+
+### Basic Usage (Using Configuration File)
+
+```bash
+# Using a configuration file (recommended)
+nextflow run main.nf -params-file params.yaml
+```
+
+### Command-Line Usage
 
 ```bash
 nextflow run main.nf \
@@ -95,14 +138,25 @@ nextflow run main.nf \
     --gatk_path "/path/to/GenomeAnalysisTK3.7.jar" \
     --picard_path "/path/to/picard.jar" \
     --beagle_path "/path/to/beagle.jar" \
-    --java_path "/usr/bin/java" \
-    --delly_path "/path/to/delly" \
-    --bcftools_path "bcftools" \
     --threads 64 \
     --gatk_memory "120g" \
     --beagle_memory "400 GB" \
     --beagle_cpus 80
 ```
+
+### Specifying Custom Tool Paths
+
+If you need to use specific versions of tools (e.g., `/usr/bin/java`), you can specify them:
+
+```bash
+nextflow run main.nf \
+    -params-file params.yaml \
+    --java_path "/usr/bin/java" \
+    --delly_path "/opt/delly/bin/delly" \
+    --bcftools_path "/usr/local/bin/bcftools"
+```
+
+**Note**: If tool paths are not specified, the pipeline will use tools from your system PATH. Ensure these tools are properly installed and accessible before running the pipeline.
 
 ## Output Structure
 

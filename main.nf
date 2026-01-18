@@ -1,44 +1,80 @@
 #!/usr/bin/env nextflow
 nextflow.enable.dsl=2
 
-params.project = 'output'
-params.bam_glob = '/data3/home/gulei/projects/GraphPan/gatk/705rice/bam_dir/chrfix_bam/*.SMfix.bam'
-params.out_dir = 'out_dir'
+// Input parameters (must be specified via config file or command line)
+params.project = null
+params.bam_glob = null
+params.out_dir = null
+params.ref = null
+params.snp_site_vcf = null
+params.indel_site_vcf = null
+params.snp_markers_intervals = null
+params.indel_markers_intervals = null
+params.sv_sites_vcf = null
 
+// Optional tool paths - if not specified, tools will be used from system PATH
+params.java_path = null
+params.delly_path = null
+params.bcftools_path = null
+params.samtools_path = null
+params.tabix_path = null
 
-params.ref = 'Nip.chrnum.sorted.fa'
-params.snp_site_vcf = '/data3/home/gulei/projects/GraphPan/gwas/markers_d/705rice/705rice/705rice.snp.sites.vcf'
-params.indel_site_vcf = '/data3/home/gulei/projects/GraphPan/gwas/markers_d/705rice/705rice/705rice.indel.sites.vcf'
-params.snp_markers_intervals = '/data3/home/gulei/projects/GraphPan/gwas/markers_d/705rice/705rice/705rice.snp.markers.intervals'
-params.indel_markers_intervals = '/data3/home/gulei/projects/GraphPan/gwas/markers_d/705rice/705rice/705rice.indel.markers.intervals'
-params.sv_sites_vcf = '/data3/home/gulei/projects/GraphPan/gwas/markers_d/705rice/705rice/705rice.delly.sv.sites.bcf'
+// Required software paths (JAR files)
+params.gatk_path = null
+params.picard_path = null
+params.beagle_path = null
 
+// Resource configuration (with defaults)
 params.threads = 48
-params.beagle_path = '/data/home/gulei/softwares/beagle.29Oct24.c8e.jar'
 params.gatk_memory = '100g'
-params.java_path = '/usr/bin/java' ?: 'java'
-params.gatk_path = './GenomeAnalysisTK3.7.jar'
-params.picard_path = '/data/home/gulei/softwares/picard.jar' 
-params.delly_path = '/data/home/gulei/softwares/delly' ?: 'delly'
-params.bcftools_path = 'bcftools'
-params.assign_id_path = './scripts/assign_id.sh'
-
-params.assign_id = file(params.assign_id_path).toAbsolutePath() // convert relative path to absolute path
-params.gatk = file(params.gatk_path).toAbsolutePath()
-params.beagle = file(params.beagle_path).toAbsolutePath()
-params.picard = file(params.picard_path).toAbsolutePath()
-params.delly = file(params.delly_path).toAbsolutePath()
-params.bcftools = file(params.bcftools_path).toAbsolutePath()
-
-
 params.beagle_memory = '300 GB'
 params.beagle_cpus = 64
+
+// Fixed path for assign_id script (always in ./scripts/assign_id.sh)
+def assign_id_path = './scripts/assign_id.sh'
+params.assign_id = file(assign_id_path).toAbsolutePath()
+
+// Convert relative paths to absolute paths (if specified)
+if (params.gatk_path) {
+    params.gatk = file(params.gatk_path).toAbsolutePath()
+} else {
+    params.gatk = null
+}
+if (params.beagle_path) {
+    params.beagle = file(params.beagle_path).toAbsolutePath()
+} else {
+    params.beagle = null
+}
+if (params.picard_path) {
+    params.picard = file(params.picard_path).toAbsolutePath()
+} else {
+    params.picard = null
+}
+
+// Set tool executables - use specified path if provided, otherwise use tool name (from PATH)
+// Handle both null and empty string cases
+params.java = (params.java_path && params.java_path.toString().trim()) ? file(params.java_path).toAbsolutePath().toString() : 'java'
+params.delly = (params.delly_path && params.delly_path.toString().trim()) ? file(params.delly_path).toAbsolutePath().toString() : 'delly'
+params.bcftools = (params.bcftools_path && params.bcftools_path.toString().trim()) ? file(params.bcftools_path).toAbsolutePath().toString() : 'bcftools'
+params.samtools = (params.samtools_path && params.samtools_path.toString().trim()) ? file(params.samtools_path).toAbsolutePath().toString() : 'samtools'
+params.tabix = (params.tabix_path && params.tabix_path.toString().trim()) ? file(params.tabix_path).toAbsolutePath().toString() : 'tabix'
 
 include { INDEX_REFERENCE; UNIFIED_GENOTYPER_SNP; UNIFIED_GENOTYPER_INDEL; GATK_SNP_FORMAT; GATK_INDEL_FORMAT } from './modules/snp_indel_gt'
 include { DELLY_SV_GENOTYPE; BCFTOOLS_MERGE_GENOTYPE } from './modules/sv_gt'
 
-if( !params.gatk ) error "params.gatk (GATK jar path) must be specified"
-if( !params.picard ) error "params.picard (Picard jar path) must be specified"
+// Validate required parameters
+if( !params.project ) error "params.project must be specified"
+if( !params.bam_glob ) error "params.bam_glob (BAM file glob pattern) must be specified"
+if( !params.out_dir ) error "params.out_dir (output directory) must be specified"
+if( !params.ref ) error "params.ref (Reference FASTA) must be specified"
+if( !params.snp_site_vcf ) error "params.snp_site_vcf (SNP sites VCF) must be specified"
+if( !params.indel_site_vcf ) error "params.indel_site_vcf (INDEL sites VCF) must be specified"
+if( !params.sv_sites_vcf ) error "params.sv_sites_vcf (SV sites BCF) must be specified"
+if( !params.snp_markers_intervals ) error "params.snp_markers_intervals (SNP intervals file) must be specified"
+if( !params.indel_markers_intervals ) error "params.indel_markers_intervals (INDEL intervals file) must be specified"
+if( !params.gatk ) error "params.gatk_path (GATK jar path) must be specified"
+if( !params.picard ) error "params.picard_path (Picard jar path) must be specified"
+if( !params.beagle ) error "params.beagle_path (Beagle jar path) must be specified"
 
 workflow {
     bam_ch = Channel.fromPath(params.bam_glob, checkIfExists: true)
@@ -71,7 +107,7 @@ workflow {
     bcf_list_ch = sv_gt_ch.map { sample_id, bcf, bcf_index -> bcf}.collect()
     bcf_index_list_ch = sv_gt_ch.map { sample_id, bcf, bcf_index -> bcf_index}.collect()
     
-    sv_merged_ch = BCFTOOLS_MERGE_GENOTYPE(bcf_list_ch, bcf_index_list_ch)
+    sv_merged_ch = BCFTOOLS_MERGE_GENOTYPE(bcf_list_ch, bcf_index_list_ch, indel_format_ch.samples_order)
 
     concat_vcf_ch = CONCAT_VCF(snp_format_ch.vcf, snp_format_ch.tbi, indel_format_ch.vcf_gz, indel_format_ch.vcf_gz_index, sv_merged_ch.vcf_gz, sv_merged_ch.vcf_gz_index)
 
@@ -96,7 +132,7 @@ process CONCAT_VCF {
 
     script:
     """
-    bcftools concat -a ${snp_vcf_gz} ${indel_vcf_gz} ${sv_vcf_gz} -o ${params.project}.snp.indel.sv.vcf
+    ${params.bcftools} concat -a ${snp_vcf_gz} ${indel_vcf_gz} ${sv_vcf_gz} -o ${params.project}.snp.indel.sv.vcf
     """
 }
 
@@ -113,7 +149,7 @@ process BEAGLE_IMPUTATION {
     script:
     """
     mkdir -p ./beagle_TMP
-    java -Xmx${task.memory.toGiga()}g -Djava.io.tmpdir=./beagle_TMP \\
+    ${params.java} -Xmx${task.memory.toGiga()}g -Djava.io.tmpdir=./beagle_TMP \\
         -jar ${params.beagle} \\
         gt=${snp_indel_sv_vcf} \\
         out=./${params.project}.snp.indel.sv.impute
@@ -128,7 +164,7 @@ process POP_SNP {
     path "${params.project}.snp.impute.vcf.gz", emit: snp_vcf
     script:
     """
-    bcftools view -i 'ID ~ "^SNP-"' ${snp_indel_sv_impute_vcf} -o ${params.project}.snp.impute.vcf.gz
+    ${params.bcftools} view -i 'ID ~ "^SNP-"' ${snp_indel_sv_impute_vcf} -o ${params.project}.snp.impute.vcf.gz
     """
 }
 process POP_INDEL {
@@ -139,7 +175,7 @@ process POP_INDEL {
     path "${params.project}.indel.impute.vcf.gz", emit: indel_vcf
     script:
     """
-    bcftools view -i 'ID ~ "^INDEL-"' ${snp_indel_sv_impute_vcf} -o ${params.project}.indel.impute.vcf.gz
+    ${params.bcftools} view -i 'ID ~ "^INDEL-"' ${snp_indel_sv_impute_vcf} -o ${params.project}.indel.impute.vcf.gz
     """
 }
 process POP_SV {
@@ -150,6 +186,6 @@ process POP_SV {
     path "${params.project}.sv.impute.vcf.gz", emit: sv_vcf
     script:
     """
-    bcftools view -i 'ID ~ "^SV-"' ${snp_indel_sv_impute_vcf} -Oz -o ${params.project}.sv.impute.vcf.gz
+    ${params.bcftools} view -i 'ID ~ "^SV-"' ${snp_indel_sv_impute_vcf} -Oz -o ${params.project}.sv.impute.vcf.gz
     """
 }
