@@ -2,9 +2,9 @@
 nextflow.enable.dsl=2
 
 // Input parameters (must be specified via config file or command line)
-params.project = null
+params.project = "cohort"
 params.bam_glob = null
-params.out_dir = null
+params.out_dir = "out_dir"
 params.ref = null
 params.snp_site_vcf = null
 params.indel_site_vcf = null
@@ -13,14 +13,15 @@ params.indel_markers_intervals = null
 params.sv_sites_vcf = null
 
 // Optional tool paths - if not specified, tools will be used from system PATH
-params.java_path = null
+params.gatk_java_path = null  // Java 8 path for GATK UnifiedGenotyper only (required for GATK 3.7)
+params.java_path = null       // Java path for other tools (Picard, Beagle, etc.)
 params.delly_path = null
 params.bcftools_path = null
 params.samtools_path = null
 params.tabix_path = null
 
 // Required software paths (JAR files)
-params.gatk_path = null
+params.gatk_path = "./GenomeAnalysisTK3.7.jar"
 params.picard_path = null
 params.beagle_path = null
 
@@ -53,6 +54,9 @@ if (params.picard_path) {
 
 // Set tool executables - use specified path if provided, otherwise use tool name (from PATH)
 // Handle both null and empty string cases
+// GATK Java (Java 8) - for GATK UnifiedGenotyper only (GATK 3.7 requires Java 8)
+params.gatk_java = (params.gatk_java_path && params.gatk_java_path.toString().trim()) ? file(params.gatk_java_path).toAbsolutePath().toString() : 'java'
+// General Java - for Picard, Beagle, and other tools (can use newer Java versions)
 params.java = (params.java_path && params.java_path.toString().trim()) ? file(params.java_path).toAbsolutePath().toString() : 'java'
 params.delly = (params.delly_path && params.delly_path.toString().trim()) ? file(params.delly_path).toAbsolutePath().toString() : 'delly'
 params.bcftools = (params.bcftools_path && params.bcftools_path.toString().trim()) ? file(params.bcftools_path).toAbsolutePath().toString() : 'bcftools'

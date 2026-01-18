@@ -16,11 +16,12 @@ indel_markers_intervals: "indel.intervals"
 
 # Software paths (optional - if not specified, tools will be used from system PATH)
 # Leave empty or omit to use tools from system PATH
-java_path: ""  # Optional: specify Java 8 executable path (empty = use from PATH)
-delly_path: ""               # Optional: specify Delly executable path (empty = use from PATH)
-bcftools_path: ""           # Optional: specify bcftools executable path (empty = use from PATH)
-samtools_path: ""           # Optional: specify samtools executable path (empty = use from PATH)
-tabix_path: ""              # Optional: specify tabix executable path (empty = use from PATH)
+gatk_java_path: ""  # Optional: specify Java 8 executable path for GATK UnifiedGenotyper only (empty = use from PATH)
+java_path: ""       # Optional: specify Java executable path for Picard, Beagle, and other tools (empty = use from PATH)
+delly_path: ""                  # Optional: specify Delly executable path (empty = use from PATH)
+bcftools_path: ""               # Optional: specify bcftools executable path (empty = use from PATH)
+samtools_path: ""               # Optional: specify samtools executable path (empty = use from PATH)
+tabix_path: ""                  # Optional: specify tabix executable path (empty = use from PATH)
 
 # Required software paths (JAR files)
 gatk_path: "./GenomeAnalysisTK3.7.jar"

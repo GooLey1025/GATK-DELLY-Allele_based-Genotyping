@@ -101,9 +101,10 @@ Detailed parameter settings and default values can be found in the header sectio
 | `--snp_markers_intervals` | Interval list file for SNP genotyping | Required |
 | `--indel_markers_intervals` | Interval list file for INDEL genotyping | Required |
 | `--gatk_path` | Path to GATK JAR file. Relative paths are automatically converted to absolute paths | `./GenomeAnalysisTK3.7.jar` (in current repository) |
-| `--picard_path` | Path to Picard JAR file. Relative paths are automatically converted to absolute paths | `./picard.jar` (in current repository) |
+| `--picard_path` | Path to Picard JAR file. Relative paths are automatically converted to absolute paths | Required |
 | `--beagle_path` | Path to Beagle JAR file. Relative paths are automatically converted to absolute paths | Required |
-| `--java_path` | **Optional**: Path to Java executable. If not specified, uses `java` from system PATH | `null` (uses PATH) |
+| `--gatk_java_path` | **Optional**: Path to Java 8 executable for GATK UnifiedGenotyper only. If not specified, uses `java` from system PATH. **Note**: GATK 3.7 requires Java 8 | `null` (uses PATH) |
+| `--java_path` | **Optional**: Path to Java executable for Picard, Beagle, and other tools. If not specified, uses `java` from system PATH | `null` (uses PATH) |
 | `--delly_path` | **Optional**: Path to Delly executable. If not specified, uses `delly` from system PATH | `null` (uses PATH) |
 | `--bcftools_path` | **Optional**: Path to bcftools executable. If not specified, uses `bcftools` from system PATH | `null` (uses PATH) |
 | `--samtools_path` | **Optional**: Path to samtools executable. If not specified, uses `samtools` from system PATH | `null` (uses PATH) |
@@ -146,17 +147,22 @@ nextflow run main.nf \
 
 ### Specifying Custom Tool Paths
 
-If you need to use specific versions of tools (e.g., `/usr/bin/java`), you can specify them:
+If you need to use specific versions of tools, you can specify them. **Important**: GATK 3.7 requires Java 8, while Picard and Beagle may require newer Java versions:
 
 ```bash
 nextflow run main.nf \
     -params-file params.yaml \
-    --java_path "/usr/bin/java" \
+    --gatk_java_path "/usr/bin/java8" \
+    --java_path "/usr/bin/java17" \
     --delly_path "/opt/delly/bin/delly" \
     --bcftools_path "/usr/local/bin/bcftools"
 ```
 
-**Note**: If tool paths are not specified, the pipeline will use tools from your system PATH. Ensure these tools are properly installed and accessible before running the pipeline.
+**Note**: 
+- `gatk_java_path` is used **only** for GATK UnifiedGenotyper (must be Java 8)
+- `java_path` is used for Picard, Beagle, and other tools (can be newer Java versions, e.g., Java 17 for Picard)
+- If tool paths are not specified, the pipeline will use tools from your system PATH
+- Ensure these tools are properly installed and accessible before running the pipeline
 
 ## Output Structure
 
