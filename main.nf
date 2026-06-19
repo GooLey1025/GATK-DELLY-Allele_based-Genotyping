@@ -62,6 +62,7 @@ params.delly = (params.delly_path && params.delly_path.toString().trim()) ? file
 params.bcftools = (params.bcftools_path && params.bcftools_path.toString().trim()) ? file(params.bcftools_path).toAbsolutePath().toString() : 'bcftools'
 params.samtools = (params.samtools_path && params.samtools_path.toString().trim()) ? file(params.samtools_path).toAbsolutePath().toString() : 'samtools'
 params.tabix = (params.tabix_path && params.tabix_path.toString().trim()) ? file(params.tabix_path).toAbsolutePath().toString() : 'tabix'
+params.bgzip = (params.bgzip_path && params.bgzip_path.toString().trim()) ? file(params.bgzip_path).toAbsolutePath().toString() : 'bgzip'
 
 include { INDEX_REFERENCE; UNIFIED_GENOTYPER_SNP; UNIFIED_GENOTYPER_INDEL; GATK_SNP_FORMAT; GATK_INDEL_FORMAT } from './modules/snp_indel_gt'
 include { DELLY_SV_GENOTYPE; BCFTOOLS_MERGE_GENOTYPE } from './modules/sv_gt'
@@ -116,9 +117,9 @@ workflow {
 
     concat_vcf_ch = CONCAT_VCF(snp_format_ch.vcf, snp_format_ch.tbi, indel_format_ch.vcf_gz, indel_format_ch.vcf_gz_index, sv_merged_ch.vcf_gz, sv_merged_ch.vcf_gz_index)
 
-    beagle_impute_ch = BEAGLE_IMPUTATION(concat_vcf_ch)
+    beagle_impute_biallelic_ch = BEAGLE_IMPUTATION(concat_vcf_ch)
 
-    pop_snp_ch = POP_SNP(beagle_impute_ch.impute_vcf)
-    pop_indel_ch = POP_INDEL(beagle_impute_ch.impute_vcf)
-    pop_sv_ch = POP_SV(beagle_impute_ch.impute_vcf)
+    pop_snp_ch = POP_SNP(beagle_impute_biallelic_ch.impute_biallelic_vcf)
+    pop_indel_ch = POP_INDEL(beagle_impute_biallelic_ch.impute_biallelic_vcf)
+    pop_sv_ch = POP_SV(beagle_impute_biallelic_ch.impute_biallelic_vcf)
 }

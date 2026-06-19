@@ -57,6 +57,7 @@ These sites VCF files and interval lists can be generated using the [GWAS-LD_Mar
 
 Example input files are available in the `./example_input` directory for reference.
 
+**Note**: Please ensure that all input files use a consistent chromosome prefix. This includes the reference genome, BAM files, site VCFs, and interval files.
 ## Configuration
 
 All parameters can be provided either via the command line or a Nextflow configuration file (YAML format). The recommended approach is to use a configuration file for better organization and reproducibility.

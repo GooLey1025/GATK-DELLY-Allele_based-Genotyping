@@ -121,7 +121,6 @@ process UNIFIED_GENOTYPER_INDEL {
         -stand_call_conf 30 \\
         -nct ${params.threads} \\
         -o ${params.project}.indel.raw.vcf.gz
-
     ${params.tabix} -f -p vcf ${params.project}.indel.raw.vcf.gz
     """
 }
